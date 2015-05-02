@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/matmat/!svn/ver/310/matmat/trunk/client/tests/vendor
+END
+chai.js
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/matmat/!svn/ver/310/matmat/trunk/client/tests/vendor/chai.js
+END
+mocha.js
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/matmat/!svn/ver/310/matmat/trunk/client/tests/vendor/mocha.js
+END
+mocha.css
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/matmat/!svn/ver/310/matmat/trunk/client/tests/vendor/mocha.css
+END
