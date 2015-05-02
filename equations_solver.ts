@@ -4,10 +4,10 @@ module Q3{
     constructor(public solutions:any[]){
     }
   }
-  class EquationsSolver {
-    solveNonlinear(equations: {[key:string]:number}[],variables: string[] = ['x','y','z']): any {
-      if(variables.length!=3){
-        throw new Error("Currently only exactly three variables are supported");
+  export class EquationsSolver {
+    solveNonlinear(equations: {[key:string]:number}[],variables: string[] = ['x','y','z']): any[] {
+      if(variables.length>3){
+        throw new Error("Currently only up to three variables are supported");
       }
       try{
         equations = _.cloneDeep(equations);
@@ -15,12 +15,26 @@ module Q3{
         var EPS = 1e-6;
         var isZero = x => Math.abs(x) < EPS;
         var isConstant = x => x === '=' || x === '1';
-        var isVariable = x => x.length == 1 && !isConstant(x);
+        var isVariable = x => 0<=variables.indexOf(x);
         var isNonlinearAtom = x => !isVariable(x) && !isConstant(x);
         var isLinearEquation = eq => !_.any(_.keys(eq), isNonlinearAtom);
         var extractVariablesFromAtom  = (atom:string) => isVariable(atom[0])? (isVariable(atom[1])?[atom[0],atom[1]]:[atom[0]]):[];
         var nonlinearEquations = equations;
         var linearEquations = [];
+
+        var timesVariable = (var1:string,var2:string):string => {
+          if(var1==='1'){
+            return var2;
+          }else if(var2==='1'){
+            return var1;
+          }else if(var1==var2){
+            return var1+'^2';
+          }else if(var1<var2){
+            return var1+var2;
+          }else{
+            return var2+var1;
+          }
+        }
 
         //this procedure removes terms with coefficient equal to zero,
         //removes equations of the form 0=0
@@ -34,6 +48,17 @@ module Q3{
             _.each(equation, (value, atom) => {
               if (isZero(value)) {
                 delete equation[atom];
+              } else {
+                if (isNonlinearAtom(atom)) { //sort letters
+                  var atomVariables = extractVariablesFromAtom(atom);
+                  if(atomVariables.length==2){
+                    var correctAtom = timesVariable(atomVariables[0], atomVariables[1]);
+                    if (atom!=correctAtom) {
+                      delete equation[atom];
+                      equation[correctAtom] = (equation[correctAtom] || 0) + value;
+                    }
+                  }
+                }
               }
             });
             if (equation['=']) {
@@ -63,7 +88,10 @@ module Q3{
             var s1 = eliminatingEquation[eliminatedAtom];
             var s2 = equation[eliminatedAtom];
             _.each(equation, (value, atom) => {
-              equation[atom] = value * s1 - eliminatingEquation[atom] * s2;
+              equation[atom] = value * s1;
+            });
+            _.each(eliminatingEquation, (value, atom) => {
+              equation[atom] = (equation[atom]||0) - value * s2;
             });
           }
         }
@@ -79,19 +107,7 @@ module Q3{
           });
           cleanUp();
         }
-        var timesVariable = (var1,var2) => {
-          if(var1==='1'){
-            return var2;
-          }else if(var2==='1'){
-            return var1;
-          }else if(var1==var2){
-            return var1+'^2';
-          }else if(var1<var2){
-            return var1+var2;
-          }else{
-            return var2+var1;
-          }
-        }
+
         var timesEquation = (variable,equation) => {
           var newEquation = {};
           _.each(equation, (value,atom) => {
@@ -104,14 +120,15 @@ module Q3{
         var eliminateVariable = (eliminatingEquation, eliminatedVariable) => {
           eliminateAtom(eliminatingEquation,eliminatedVariable);
           var helperEquations = _.zipObject(variables,_.map(variables,variable => timesEquation(variable,eliminatingEquation)));
+          eliminateAtomFromEquation(helperEquations[eliminatedVariable],eliminatingEquation,eliminatedVariable);
           _.each(helperEquations,(helperEquation:{[key:string]:number},variable:string)=>{
             if(variable != eliminatedVariable){
-              eliminateAtomFromEquation(helperEquations[eliminatedVariable],helperEquation,timesVariable(variable,eliminatingEquation));
+              eliminateAtomFromEquation(helperEquations[eliminatedVariable],helperEquation,timesVariable(variable,eliminatedVariable));
             }
           });
           _.each(nonlinearEquations, equation => {
             _.each(helperEquations,(helperEquation:{[key:string]:number},variable:string)=>{
-              eliminateAtomFromEquation(equation,helperEquation,timesVariable(variable,eliminatingEquation));
+              eliminateAtomFromEquation(equation,helperEquation,timesVariable(variable,eliminatedVariable));
             });
           });
           cleanUp();
@@ -135,24 +152,29 @@ module Q3{
           //(that is: ax^2+bx+c=0)
           //then we can solve this equation
           _.each(nonlinearEquations, equation => {
-            var variables=_.uniq(_.flatten(_.map(_.keys(equation),extractVariablesFromAtom)));
-            if(variables.length===1){
-              var variable = variables[0];
+            var equationVariables=_.uniq(_.flatten(_.map(_.keys(equation),extractVariablesFromAtom)));
+            if(equationVariables.length===1){
+              var variable = equationVariables[0];
               var a=equation[timesVariable(variable,variable)];
               var b=equation[variable]||0;
               var c=equation['1'];
               var delta=sq(b)-4*a*c;
+              var replace = (value:number) => {
+                var newEquation : {[key:string]:number} = { '=': value };
+                newEquation[variable] = 1;
+                return _.without(equations, equation).concat(newEquation);
+              }
               if(isZero(delta)){
                 var value = -b / (2*a);
-                throw new FoundSolutions(this.solveNonlinear(equations.concat({variable:1,'=':value}),variables));
+                throw new FoundSolutions(this.solveNonlinear(replace(value),variables));
               }else if(delta<0){
-                throw new RangeError("Negative delta");
+                throw new FoundSolutions([]);
               }else{
                 var value1 = (-b + Math.sqrt(delta))/(2*a);
                 var value2 = (-b - Math.sqrt(delta))/(2*a);
                 throw new FoundSolutions(
-                  this.solveNonlinear(equations.concat({variable:1,'=':value1}),variables).concat(
-                    this.solveNonlinear(equations.concat({variable:1,'=':value2}),variables)
+                  this.solveNonlinear(replace(value1),variables).concat(
+                    this.solveNonlinear(replace(value2),variables)
                   )
                 );
               }
@@ -241,35 +263,33 @@ module Q3{
         if(!nonlinearEquations.length){
           //a)
           var equationVariables = _.map(linearEquations,equation => _.filter(_.keys(equation), isVariable));
-          switch(linearEquations.length){
-            case 0:
-              //a1)
-              return [{type:'volume',constraints:[]}];
-            case 1:
-              //a2)
-              return [{type:'plane',constraints:[{variables:[equationVariables[0][0]],equation:linearEquations[0]}]}];
-            case 2:
-              //a3)
-              var variable0 = _.difference(equationVariables[0],equationVariables[1])[0];
-              var variable1 = _.difference(equationVariables[1],equationVariables[0])[0];
-              return [{type:'line',constraints:[{variables:[variable0],equation:linearEquations[0]},{variables:[variable1],equation:linearEquations[1]}]}];
-            case 3:
-              //a4)
-              return [{type:'point',constraints:[
-                {variables:[equationVariables[0][0]],equation:linearEquations[0]},
-                {variables:[equationVariables[1][0]],equation:linearEquations[1]},
-                {variables:[equationVariables[2][0]],equation:linearEquations[2]}
-              ]}];
-            default:
-              throw new Error("Impossible case: more than 3 equations left?")
+          var uniqueVariables = _.map(equationVariables, (variables, index) => _.difference(variables, _.flatten(equationVariables.slice(0, index).concat(equationVariables.slice(index + 1)))));
+          if(variables.length<linearEquations.length){
+            throw new Error("Impossible case: more independent linear equations than variables!")
           }
+          var dimensionalityToType = ['point', 'line', 'plane', 'volume'];
+          var assignment = {};
+          _.each(linearEquations, (equation, index) => {
+            var uniqueVariable = uniqueVariables[index][0];
+            var valueExpression = {};
+            _.each(equation, (value, atom) => {
+              if(atom!=uniqueVariable){
+                valueExpression[atom] = -value / equation[uniqueVariable];
+              }
+            });
+            if(_.keys(valueExpression).length==1){
+              valueExpression = valueExpression['1'];
+            }
+            assignment[uniqueVariable] = valueExpression;
+          });
+          return [{ type: dimensionalityToType[variables.length-linearEquations.length] , assignment: assignment}];
         }else{
           //TODO b), c), d), e)
           throw new Error("Currently nonlinear solutions are not supported");
         }
       }catch(e){
         if(e instanceof FoundSolutions){
-          return e.solutions;
+          return (<FoundSolutions>e).solutions;
         }
         throw e;
       }
