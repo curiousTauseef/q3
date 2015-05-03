@@ -28,7 +28,9 @@ or several points (for example an intersection {y^2=x, y=x^2}) but these situati
 I really hope to cover more cases in future, though!
 
 # Usage
-Here is an example from tests/q3_test.js
+You need the q3.js file. I've commited a compiled version to this repo for your convinience, which should work with both Node.js and browser (in the later case, you need to include lodash.js yourself). Alternatively you can compile equations_solver.ts with type script compiler yourself. You can also find the equations_solver.d.ts definition file helpful if you plan to use precompiled version in a TypeScript project.
+
+Here is an example from test/test.js
 ```
 it("should solve x^2-xy+z^2=0,y=2,zy+z+y^2=7", function(){
   var solver = new Q3.EquationsSolver();
