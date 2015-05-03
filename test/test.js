@@ -1,5 +1,5 @@
-var expect = chai.expect;
-
+var expect = require('chai').expect;
+var Q3 = require('../q3');
 describe("EquationsSolver",function(){
   describe("solveNonlinear", function(){
     it("should return unrestricted volume solution for empty equations set", function(){

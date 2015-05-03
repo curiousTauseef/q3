@@ -1,0 +1,35 @@
+{
+  "name": "q3",
+  "version": "0.0.0",
+  "description": "A Javascript library for solving quadratic equations set",
+  "main": "q3.js",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {
+    "mocha": "~2.2.4",
+    "chai": "*"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qbolec/q3.git"
+  },
+  "keywords": [
+    "TypScript",
+    "3D",
+    "Geometry",
+    "Equations",
+    "Quadratic"
+  ],
+  "author": "qbolec",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/qbolec/q3/issues"
+  },
+  "dependencies": {
+    "lodash": "~3.8.0"
+  }
+}
