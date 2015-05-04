@@ -1,4 +1,5 @@
 # q3
+![build status](https://api.travis-ci.org/qbolec/q3.svg?branch=master)
 
 This is a Javascript library written in TypeScript for solving quadratic equations sets which arise from geometric problems.
 For example if you try to intersect two circles on a plane, you can describe this situation as
