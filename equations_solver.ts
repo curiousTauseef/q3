@@ -17,7 +17,7 @@ module Q3{
         var isConstant = x => x === '=' || x === '1';
         var isVariable = x => 0<=variables.indexOf(x);
         var isNonlinearAtom = x => !isVariable(x) && !isConstant(x);
-        var isLinearEquation = eq => !_.any(_.keys(eq), isNonlinearAtom);
+        var isLinearEquation = eq => !_.some(_.keys(eq), isNonlinearAtom);
         var extractVariablesFromAtom  = (atom:string) => isVariable(atom[0])? (isVariable(atom[1])?[atom[0],atom[1]]:[atom[0]]):[];
         var nonlinearEquations = equations;
         var linearEquations = [];

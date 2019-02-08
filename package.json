@@ -11,7 +11,11 @@
     "chai": "*"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "tsc": "tsc",
+    "build": "npm run build-js && npm run build-definition",
+    "build-js": "npm run tsc -- q3.ts --out q3.js",
+    "build-definition": "npm run tsc -- -d equations_solver.ts"
   },
   "repository": {
     "type": "git",
@@ -30,6 +34,9 @@
     "url": "https://github.com/qbolec/q3/issues"
   },
   "dependencies": {
-    "lodash": "~3.8.0"
+    "lodash": "~4.17.11"
+  },
+  "devDependencies": {
+    "typescript":"~3.3.3"
   }
 }
