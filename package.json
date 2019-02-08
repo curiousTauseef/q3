@@ -14,7 +14,7 @@
     "test": "mocha",
     "tsc": "tsc",
     "build": "npm run build-js && npm run build-definition",
-    "build-js": "npm run tsc -- q3.ts --out q3.js",
+    "build-js": "npm run tsc -- --outFile q3.js q3.ts",
     "build-definition": "npm run tsc -- -d equations_solver.ts"
   },
   "repository": {
